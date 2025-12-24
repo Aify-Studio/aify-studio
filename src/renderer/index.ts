@@ -26,9 +26,8 @@
  * ```
  */
 
-import { RPCLink } from "@orpc/client/message-port";
-import "./index.css";
 import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/message-port";
 import type { RouterClient } from "@orpc/server";
 import type { router } from "@/main/api/routes";
 
@@ -49,4 +48,4 @@ export const orpc: RouterClient<typeof router> = createORPCClient(link);
 const res = await orpc.hello.get();
 console.log(res.hello);
 
-import "./app";
+import "./App";
