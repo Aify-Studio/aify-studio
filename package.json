@@ -45,6 +45,8 @@
     "vite": "^7.3.0"
   },
   "dependencies": {
+    "@orpc/client": "^1.13.0",
+    "@orpc/server": "^1.13.0",
     "aify-studio": "link:",
     "electron-squirrel-startup": "^1.0.1"
   },

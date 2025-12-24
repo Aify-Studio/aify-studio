@@ -1,6 +1,9 @@
 import path from "node:path";
-import { app, BrowserWindow } from "electron";
+import { onError } from "@orpc/server";
+import { RPCHandler } from "@orpc/server/message-port";
+import { app, BrowserWindow, ipcMain } from "electron";
 import started from "electron-squirrel-startup";
+import { router } from "./api/routes";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -28,10 +31,26 @@ const createWindow = () => {
   mainWindow.webContents.openDevTools();
 };
 
+const handler = new RPCHandler(router, {
+  interceptors: [
+    onError((error) => {
+      console.error(error);
+    }),
+  ],
+});
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", createWindow);
+app.on("ready", () => {
+  ipcMain.on("start-api-server", (event) => {
+    const [serverPort] = event.ports;
+    handler.upgrade(serverPort);
+    serverPort.start();
+  });
+
+  createWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
