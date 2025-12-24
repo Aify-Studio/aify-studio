@@ -48,3 +48,5 @@ export const orpc: RouterClient<typeof router> = createORPCClient(link);
 
 const res = await orpc.hello.get();
 console.log(res.hello);
+
+import "./app";
