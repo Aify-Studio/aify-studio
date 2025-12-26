@@ -25,27 +25,10 @@
  *  });
  * ```
  */
-
-import { createORPCClient } from "@orpc/client";
-import { RPCLink } from "@orpc/client/message-port";
-import type { RouterClient } from "@orpc/server";
-import type { router } from "@/main/api/routes";
+import { ipc } from "@/main/ipc";
 
 console.log('👋 This message is being logged by "renderer.ts", included via Vite');
 
-const { port1: clientPort, port2: serverPort } = new MessageChannel();
+ipc.initialize();
 
-window.postMessage("start-native-client", "*", [serverPort]);
-
-const link = new RPCLink({
-  port: clientPort,
-});
-
-clientPort.start();
-
-export const orpc: RouterClient<typeof router> = createORPCClient(link);
-
-const res = await orpc.hello.get();
-console.log(res.hello);
-
-import "./App";
+import "./app";

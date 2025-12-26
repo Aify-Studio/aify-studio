@@ -1,9 +1,8 @@
 import path from "node:path";
-import { onError } from "@orpc/server";
-import { RPCHandler } from "@orpc/server/message-port";
 import { app, BrowserWindow, ipcMain } from "electron";
 import started from "electron-squirrel-startup";
-import { router } from "./api/routes";
+import { IPC_CHANNELS } from "@/shared/constants";
+import { ipcHandler } from "./ipc/hander";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -31,25 +30,21 @@ const createWindow = () => {
   mainWindow.webContents.openDevTools();
 };
 
-const handler = new RPCHandler(router, {
-  interceptors: [
-    onError((error) => {
-      console.error(error);
-    }),
-  ],
-});
+function setupIpc() {
+  ipcMain.on(IPC_CHANNELS.START_IPC_SERVER, (event) => {
+    const [serverPort] = event.ports;
+
+    ipcHandler.upgrade(serverPort);
+    serverPort.start();
+  });
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-  ipcMain.on("start-native-server", (event) => {
-    const [serverPort] = event.ports;
-    handler.upgrade(serverPort);
-    serverPort.start();
-  });
-
   createWindow();
+  setupIpc();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

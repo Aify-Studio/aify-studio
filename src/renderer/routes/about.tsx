@@ -11,7 +11,7 @@ function AboutPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center bg-orange-50">
+    <div className="flex h-screen flex-col items-center justify-center">
       <Header />
       <h1>{t("welcome")}</h1>
       <div className="mt-6">
