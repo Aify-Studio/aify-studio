@@ -1,14 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/renderer/components/ui/button";
+import { Header } from "../components/header";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
 function HomePage() {
+  const { t } = useTranslation();
+
   return (
-    <div className="flex h-screen items-center justify-center bg-orange-100">
-      <Button render={<Link to="/about" />}>Hello HomePage!</Button>
+    <div className="flex h-screen flex-col items-center justify-center bg-orange-50">
+      <Header />
+      <h1>{t("welcome")}</h1>
+      <div className="mt-6">
+        <Button render={<Link to="/about" />}>Hello HomePage!</Button>
+      </div>
     </div>
   );
 }

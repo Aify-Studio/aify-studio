@@ -3,9 +3,9 @@
 import { ipcRenderer } from "electron";
 
 window.addEventListener("message", (event) => {
-  if (event.data === "start-api-client") {
+  if (event.data === "start-native-client") {
     const [serverPort] = event.ports;
 
-    ipcRenderer.postMessage("start-api-server", null, [serverPort]);
+    ipcRenderer.postMessage("start-native-server", null, [serverPort]);
   }
 });

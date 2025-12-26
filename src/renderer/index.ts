@@ -35,7 +35,7 @@ console.log('👋 This message is being logged by "renderer.ts", included via Vi
 
 const { port1: clientPort, port2: serverPort } = new MessageChannel();
 
-window.postMessage("start-api-client", "*", [serverPort]);
+window.postMessage("start-native-client", "*", [serverPort]);
 
 const link = new RPCLink({
   port: clientPort,

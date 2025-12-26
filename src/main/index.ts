@@ -43,7 +43,7 @@ const handler = new RPCHandler(router, {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-  ipcMain.on("start-api-server", (event) => {
+  ipcMain.on("start-native-server", (event) => {
     const [serverPort] = event.ports;
     handler.upgrade(serverPort);
     serverPort.start();
