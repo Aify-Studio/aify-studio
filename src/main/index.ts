@@ -2,7 +2,8 @@ import path from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
 import started from "electron-squirrel-startup";
 import { IPC_CHANNELS } from "@/shared/constants";
-import { ipcHandler } from "./ipc/hander";
+import { apiServer } from "./api";
+import { ipcHandler } from "./ipc/ipc.hander";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -39,12 +40,17 @@ function setupIpc() {
   });
 }
 
+function setupApiServer() {
+  apiServer.listen(20_000, "127.0.0.1", () => console.log("Listening on 127.0.0.1:20000"));
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
   createWindow();
   setupIpc();
+  setupApiServer();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
