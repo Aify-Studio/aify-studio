@@ -3,5 +3,12 @@
   "extends": ["ultracite/core", "ultracite/react", "ultracite/remix"],
   "formatter": {
     "lineWidth": 120
+  },
+  "linter": {
+    "rules": {
+      "performance": {
+        "noNamespaceImport": "off"
+      }
+    }
   }
 }

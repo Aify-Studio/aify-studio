@@ -1,28 +1,25 @@
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/renderer/components/ui/button";
-import { Header } from "../components/header";
-import { apiClient } from "../lib/api-client";
+import { createFileRoute } from "@tanstack/react-router";
+import { AppSidebar } from "@/renderer/components/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/renderer/components/ui/sidebar";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
 function HomePage() {
-  const { t } = useTranslation();
-  const healthcheckQuery = useQuery({ queryKey: ["healthcheck"], queryFn: () => apiClient.health.healthcheck() });
-
   return (
-    <div className="flex h-screen flex-col items-center justify-center">
-      <Header />
-      <h1>{t("welcome")}</h1>
-      <div className="mt-6 flex flex-col items-center justify-center">
-        <p>System health: {healthcheckQuery.data || "checking"}</p>
-        <Button className="mt-4" render={<Link to="/about" />}>
-          Hello HomePage!
-        </Button>
-      </div>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset className="content">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+          </div>
+          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
