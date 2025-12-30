@@ -10,7 +10,33 @@ import type { ForgeConfig } from "@electron-forge/shared-types";
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    ignore: [/node_modules\/(?!(better-sqlite3|bindings|file-uri-to-path)\/)/],
+    ignore: (file: string) => {
+      if (!file) return false;
+
+      const keep = file.startsWith("/.vite");
+      if (keep) {
+        return false;
+      }
+
+      const isNodeModules = file === "/node_modules";
+      if (isNodeModules) {
+        return false;
+      }
+
+      // Copy @libsql/client to the app bundle
+      if (
+        file.startsWith("/node_modules/@libsql") ||
+        file.startsWith("/node_modules/libsql") ||
+        file.startsWith("/node_modules/js-base64") ||
+        file.startsWith("/node_modules/@neon-rs") ||
+        file.startsWith("/node_modules/promise-limit") ||
+        file.startsWith("/node_modules/ws")
+      ) {
+        return false;
+      }
+
+      return true;
+    },
   },
   rebuildConfig: {},
   makers: [new MakerSquirrel({}), new MakerZIP({}, ["darwin"]), new MakerRpm({}), new MakerDeb({})],

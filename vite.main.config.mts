@@ -10,7 +10,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ["better-sqlite3"],
+      external: ["@libsql/client", "@libsql/darwin-arm64", "@libsql/darwin-x64", "@libsql/win32-x64-msvc"],
     },
   },
 });
