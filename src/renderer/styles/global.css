@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/jetbrains-mono";
 
+@source "../node_modules/streamdown/dist/*.js";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -142,6 +144,7 @@ html {
   display: flex;
   flex-direction: column;
   height: 100%;
+  background-color: rgba(255, 255, 255, 0.98);
 }
 
 .title-bar {
@@ -153,6 +156,7 @@ html {
   z-index: 9999;
   user-select: none;
   -webkit-app-region: drag;
+  background: transparent;
 }
 
 .content {

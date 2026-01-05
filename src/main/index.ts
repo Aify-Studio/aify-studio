@@ -22,6 +22,10 @@ const createWindow = () => {
       height: 35,
     },
     ...(process.platform !== "darwin" ? { titleBarOverlay: true } : {}),
+    frame: false,
+    transparent: true,
+    // vibrancy: 'fullscreen-ui',    // on MacOS
+    // backgroundMaterial: 'acrylic',
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
@@ -35,7 +39,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 
 function setupIpc() {

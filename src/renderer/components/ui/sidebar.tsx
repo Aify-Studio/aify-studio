@@ -109,7 +109,7 @@ function SidebarProvider({
   return (
     <SidebarContext.Provider value={contextValue}>
       <div
-        className={cn("group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar", className)}
+        className={cn("group/sidebar-wrapper flex min-h-svh w-full bg-transparent", className)}
         data-slot="sidebar-wrapper"
         style={
           {
@@ -143,7 +143,7 @@ function Sidebar({
   if (collapsible === "none") {
     return (
       <div
-        className={cn("flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground", className)}
+        className={cn("flex h-full w-(--sidebar-width) flex-col bg-transparent text-sidebar-foreground", className)}
         data-slot="sidebar"
         {...props}
       >
@@ -154,7 +154,7 @@ function Sidebar({
 
   return (
     <div
-      className="group peer hidden text-sidebar-foreground md:block"
+      className="group peer hidden bg-transparent text-sidebar-foreground md:block"
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-side={side}
       data-slot="sidebar"
@@ -175,7 +175,7 @@ function Sidebar({
       />
       <div
         className={cn(
-          "inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
+          "inset-y-0 z-10 hidden h-svh w-(--sidebar-width) bg-transparent transition-[left,right,width] duration-200 ease-linear md:flex",
           side === "left"
             ? "left-0 group-data-[collapsible=offExamples]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offExamples]:right-[calc(var(--sidebar-width)*-1)]",
@@ -189,7 +189,7 @@ function Sidebar({
         {...props}
       >
         <div
-          className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
+          className="flex size-full flex-col bg-transparent group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
         >
