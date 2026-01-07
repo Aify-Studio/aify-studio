@@ -33,7 +33,7 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { messages, sendMessage, regenerate, status } = useChat({
+  const { messages, sendMessage, regenerate, status, error } = useChat({
     transport: {
       async sendMessages(options) {
         return eventIteratorToUnproxiedDataStream(
@@ -98,6 +98,13 @@ function HomePage() {
                     })}
                   </Fragment>
                 ))}
+                {error && (
+                  <Message from="assistant">
+                    <MessageContent>
+                      <MessageResponse className="text-destructive">{error.message}</MessageResponse>
+                    </MessageContent>
+                  </Message>
+                )}
               </ConversationContent>
               <ConversationScrollButton />
             </Conversation>
