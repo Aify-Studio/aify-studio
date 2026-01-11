@@ -7,7 +7,8 @@ import { app } from "electron";
 import * as schema from "./schema";
 
 const dbPath = process.env.NODE_ENV === "development" ? "./data.db" : path.join(app.getPath("userData"), "data.db");
-const migrationsFolder = path.join(__dirname, "./migrations");
+const migrationsFolder =
+  process.env.NODE_ENV === "development" ? "src/main/api/infra/db/migrations" : path.join(__dirname, "./migrations");
 
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 

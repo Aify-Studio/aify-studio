@@ -1,6 +1,7 @@
 import { useChat } from "@ai-sdk/react";
 import { eventIteratorToUnproxiedDataStream } from "@orpc/client";
 import { createFileRoute } from "@tanstack/react-router";
+import { generateId } from "ai";
 import { CopyIcon, RefreshCcwIcon } from "lucide-react";
 import { Fragment, useRef } from "react";
 import { AppSidebar } from "@/renderer/components/app-sidebar";
@@ -36,11 +37,13 @@ function HomePage() {
   const { messages, sendMessage, regenerate, status, error } = useChat({
     transport: {
       async sendMessages(options) {
+        const lastMessage = options.messages.at(-1);
         return eventIteratorToUnproxiedDataStream(
           await apiClient.chat.create(
             {
-              chatId: options.chatId,
+              chatId: options.chatId || generateId(),
               messages: options.messages,
+              message: lastMessage,
             },
             { signal: options.abortSignal }
           )
@@ -54,7 +57,7 @@ function HomePage() {
 
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {
-      sendMessage({ text: message.text });
+      sendMessage({ role: "user" as const, parts: [{ type: "text", text: message.text }] });
     }
   };
 
@@ -68,7 +71,7 @@ function HomePage() {
               <ConversationContent>
                 {messages.map((message, messageIndex) => (
                   <Fragment key={message.id}>
-                    {message.parts.map((part, i) => {
+                    {message.parts.map((part) => {
                       switch (part.type) {
                         case "text": {
                           const isLastMessage = messageIndex === messages.length - 1;

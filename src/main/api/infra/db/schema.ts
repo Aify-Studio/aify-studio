@@ -10,7 +10,7 @@ export const chat_table = sqliteTable("chat", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });
 
-export type Chat = InferSelectModel<typeof chat_table>;
+export type ChatModel = InferSelectModel<typeof chat_table>;
 
 export const message_table = sqliteTable("message", {
   id: text("id", { length: 36 })
@@ -22,4 +22,4 @@ export const message_table = sqliteTable("message", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });
 
-export type Message = InferSelectModel<typeof message_table>;
+export type MessageModel = InferSelectModel<typeof message_table>;

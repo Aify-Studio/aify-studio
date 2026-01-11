@@ -52,9 +52,7 @@ function setupIpc() {
 }
 
 function setupApiServer() {
-  if (process.env.NODE_ENV !== "development") {
-    runMigrate();
-  }
+  runMigrate();
   apiServer.listen(20_000, "127.0.0.1", () => console.log("Listening on 127.0.0.1:20000"));
 }
 

@@ -93,3 +93,4 @@ out/
 
 # sqlite3
 data.db
+.env
