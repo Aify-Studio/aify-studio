@@ -1,4 +1,4 @@
-import type { ChatMessage } from "../../chat/chat.schema";
+import type { ChatMessage } from "../../../../shared/lib/chat.schema";
 
 export function getTextFromMessage(message: ChatMessage): string {
   return message.parts

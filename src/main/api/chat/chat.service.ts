@@ -1,21 +1,99 @@
 import { ORPCError, os, streamToEventIterator, type } from "@orpc/server";
-import { convertToModelMessages, createUIMessageStream, generateText, streamText } from "ai";
+import { convertToModelMessages, createUIMessageStream, generateText, JsonToSseTransformStream, streamText } from "ai";
+import z from "zod";
+import { convertToChatMessages } from "@/shared/lib/chat-converter";
+import { generateMessageId } from "@/shared/lib/id-utils";
+import type { ChatMessage } from "../../../shared/lib/chat.schema";
 import { TITLE_PROMPT } from "../infra/ai/prompts";
 import { getTitleModel, openAiCompatibleProvider } from "../infra/ai/providers";
 import { getTextFromMessage } from "../infra/ai/utils";
-import type { MessageModel } from "../infra/db/schema";
-import { convertToChatMessages } from "./chat.converter";
+import type { ChatModel, MessageModel } from "../infra/db/schema";
 import {
   getChatById,
   getMessagesByChatId,
+  listChats,
   saveChat,
   saveMessage,
   saveMessages,
   updateChatTitleById,
 } from "./chat.repository";
-import type { ChatMessage } from "./chat.schema";
 
-export const createChat = os
+export const listChatsRoute = os
+  .route({ method: "GET", path: "/chats" })
+  .input(type<{ cursor?: string; limit?: number; direction?: "asc" | "desc" }>())
+  .handler(async ({ input }) => {
+    const { cursor, limit, direction } = input;
+    return await listChats({
+      cursor,
+      limit,
+      direction,
+    });
+  });
+
+export const getChatMessagesRoute = os
+  .route({ method: "GET", path: "/chat/{chatId}" })
+  .input(z.object({ chatId: z.string() }))
+  .handler(async ({ input }) => {
+    const { chatId } = input;
+
+    let chat: ChatModel | null;
+
+    try {
+      chat = await getChatById(chatId);
+    } catch {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "chat not found.",
+      });
+    }
+
+    if (!chat) {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "chat not found.",
+      });
+    }
+
+    return await getMessagesByChatId(chat.id);
+  });
+
+export const getChatStreamRoute = os
+  .route({ method: "GET", path: "/chat/{chatId}/stream" })
+  .input(z.object({ chatId: z.string() }))
+  .handler(async ({ input }) => {
+    const { chatId } = input;
+
+    let chat: ChatModel | null;
+
+    try {
+      chat = await getChatById(chatId);
+    } catch {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "chat not found.",
+      });
+    }
+
+    if (!chat) {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "chat not found.",
+      });
+    }
+
+    const previousMessages = await getMessagesByChatId(chat.id);
+    const mostRecentMessage = previousMessages.at(-1);
+
+    const restoredStream = createUIMessageStream<ChatMessage>({
+      execute: ({ writer }) => {
+        writer.write({
+          type: "data-appendMessage",
+          data: JSON.stringify(mostRecentMessage),
+          transient: true,
+        });
+      },
+    });
+
+    return streamToEventIterator(restoredStream.pipeThrough(new JsonToSseTransformStream()));
+  });
+
+export const createChatRoute = os
   .route({ method: "POST", path: "/chat" })
   .input(type<{ chatId: string; messages?: ChatMessage[]; message?: ChatMessage }>())
   .handler(async ({ input }) => {
@@ -72,6 +150,7 @@ export const createChat = os
 
         writer.merge(result.toUIMessageStream());
       },
+      generateId: generateMessageId,
       onFinish: async ({ messages: finishedMessages }) => {
         await saveMessages(
           finishedMessages.map((currentMessage) => ({

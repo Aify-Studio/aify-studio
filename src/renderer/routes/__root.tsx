@@ -1,5 +1,5 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+// import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { TitleBar } from "../components/title-bar";
 
 export const Route = createRootRoute({
@@ -11,7 +11,7 @@ function RootComponent() {
     <>
       <TitleBar />
       <Outlet />
-      <TanStackRouterDevtools />
+      {/*<TanStackRouterDevtools />*/}
     </>
   );
 }
