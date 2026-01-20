@@ -4,6 +4,7 @@ import { AppSidebar } from "@/renderer/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/renderer/components/ui/sidebar";
 import { convertToChatMessages } from "@/shared/lib/chat-converter";
 import { Chat } from "../components/chat";
+import { TitleBar } from "../components/title-bar";
 import { apiClient } from "../lib/api-client";
 import { useAppStore } from "../stores";
 
@@ -23,11 +24,15 @@ function HomePage() {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="content">
+      <AppSidebar className="primary-island island">
+        <TitleBar />
+      </AppSidebar>
+      <SidebarInset className="island content-island">
+        <TitleBar />
         {initialMessages?.length && <Chat chatId={chatId} initialMessages={initialMessages} />}
         {!initialMessages?.length && <Chat chatId={chatId} initialMessages={initialMessages} />}
       </SidebarInset>
+      {/*<div className="secondary-island island" />*/}
     </SidebarProvider>
   );
 }

@@ -158,8 +158,3 @@ html {
   -webkit-app-region: drag;
   background: transparent;
 }
-
-.content {
-  /* 35px(title bar) + 8px(margin-top) + 8px(margin-bottom) = 51 */
-  height: calc(100vh - 51px);
-}

@@ -66,8 +66,8 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
-      <div className="flex-1 rounded-xl md:min-h-min">
+    <div className="overscroll-behavior-contain flex h-dvh w-full flex-1 touch-pan-y flex-col">
+      <div className="relative flex-1">
         <Conversation>
           <ConversationContent>
             {messages.map((message, messageIndex) => (
@@ -114,7 +114,12 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
         </Conversation>
       </div>
       <PromptInputProvider>
-        <PromptInput globalDrop multiple onSubmit={handleSubmit}>
+        <PromptInput
+          className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4"
+          globalDrop
+          multiple
+          onSubmit={handleSubmit}
+        >
           <PromptInputBody>
             <PromptInputTextarea ref={textareaRef} />
           </PromptInputBody>
