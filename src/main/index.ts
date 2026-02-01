@@ -12,10 +12,10 @@ if (started) {
 }
 
 const createWindow = () => {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: path.join(__dirname, "../../assets/icons/icon.ico"),
     titleBarStyle: "hidden",
     titleBarOverlay: {
       color: "rgba(0,0,0,0)",
@@ -37,6 +37,8 @@ const createWindow = () => {
   } else {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
+
+  app.dock?.setIcon(path.join(__dirname, "../../assets/icons/1024x1024.png"));
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();

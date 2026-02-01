@@ -13,6 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio --port=3000",
+    "electron:generate-icons": "electron-icon-builder --input=./assets/icons/icon.png --output=./assets --flatten",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [],
@@ -45,6 +46,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "drizzle-kit": "^0.31.8",
     "electron": "^39.2.7",
+    "electron-icon-builder": "^2.0.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "typescript": "~5.9.3",
