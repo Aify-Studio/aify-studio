@@ -1,5 +1,6 @@
 import { Button } from "@base-ui/react/button";
 import { useQuery } from "@tanstack/react-query";
+import { SquarePen } from "lucide-react";
 import { apiClient } from "../lib/api-client";
 import { useAppStore } from "../stores";
 import {
@@ -31,13 +32,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>Assistants</SidebarMenuButton>
+                  <SidebarMenuButton>
+                    <SquarePen strokeWidth={1.5} />
+                    <span>New thread</span>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
           <SidebarGroup>
-            <SidebarGroupLabel>Chats</SidebarGroupLabel>
+            <SidebarGroupLabel>Threads</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {listChatsQuery.data?.chats.map((item) => (
