@@ -19,6 +19,6 @@
     "hooks": "@/renderer/hooks"
   },
   "menuColor": "default",
-  "menuAccent": "bold",
+  "menuAccent": "subtle",
   "registries": {}
 }

@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { SquarePen } from "lucide-react";
 import { apiClient } from "../lib/api-client";
 import { useAppStore } from "../stores";
+import { SettingsDialog } from "./settings/settings-dialog";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -55,6 +57,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SettingsDialog />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
         <SidebarRail />
       </Sidebar>
     </>

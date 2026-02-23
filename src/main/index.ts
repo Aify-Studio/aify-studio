@@ -24,6 +24,7 @@ const createWindow = () => {
     ...(process.platform !== "darwin" ? { titleBarOverlay: true } : {}),
     frame: false,
     transparent: true,
+    hasShadow: true,
     // vibrancy: 'fullscreen-ui',    // on MacOS
     // backgroundMaterial: 'acrylic',
     webPreferences: {
