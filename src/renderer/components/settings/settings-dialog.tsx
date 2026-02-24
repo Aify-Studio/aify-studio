@@ -26,7 +26,7 @@ const data = {
 
 export function SettingsDialog() {
   const { t } = useTranslation();
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("general");
 
   return (

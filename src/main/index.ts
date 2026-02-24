@@ -6,6 +6,8 @@ import { apiServer } from "./api";
 import { runMigrate } from "./api/infra/db";
 import { ipcHandler } from "./ipc/ipc.hander";
 
+const inDevelopment = process.env.NODE_ENV === "development";
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
@@ -16,7 +18,7 @@ const createWindow = () => {
     width: 1200,
     height: 800,
     icon: path.join(__dirname, "../../assets/icons/icon.ico"),
-    titleBarStyle: "hidden",
+    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
     titleBarOverlay: {
       color: "rgba(0,0,0,0)",
       height: 35,
@@ -39,10 +41,14 @@ const createWindow = () => {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
-  app.dock?.setIcon(path.join(__dirname, "../../assets/icons/1024x1024.png"));
+  if (process.platform === "darwin" && inDevelopment) {
+    app.dock?.setIcon(path.join(__dirname, "../../assets/icons/icon.png"));
+  }
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  if (inDevelopment) {
+    mainWindow.webContents.openDevTools();
+  }
 };
 
 function setupIpc() {
