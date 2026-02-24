@@ -68,6 +68,51 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
   return (
     <div className="overscroll-behavior-contain flex h-dvh w-full flex-1 touch-pan-y flex-col">
       <div className="relative flex-1">
+        <div className="absolute inset-0 flex-1 touch-pan-y overflow-hidden">
+          {/*<ScrollArea className="height: 100%; width: 100%; overflow: auto;">
+            <div className="mx-auto flex min-w-0 max-w-4xl flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
+              {messages.map((message, messageIndex) => (
+                <Fragment key={message.id}>
+                  {message.parts.map((part) => {
+                    switch (part.type) {
+                      case "text": {
+                        const isLastMessage = messageIndex === messages.length - 1;
+                        return (
+                          <div key={message.key}>
+                            <Message from={message.role}>
+                              <MessageContent>
+                                <MessageResponse>{part.text}</MessageResponse>
+                              </MessageContent>
+                            </Message>
+                            {message.role === "assistant" && isLastMessage && (
+                              <MessageActions>
+                                <MessageAction label="Retry" onClick={() => regenerate()}>
+                                  <RefreshCcwIcon className="size-3" />
+                                </MessageAction>
+                                <MessageAction label="Copy" onClick={() => navigator.clipboard.writeText(part.text)}>
+                                  <CopyIcon className="size-3" />
+                                </MessageAction>
+                              </MessageActions>
+                            )}
+                          </div>
+                        );
+                      }
+                      default:
+                        return null;
+                    }
+                  })}
+                </Fragment>
+              ))}
+              {error && (
+                <Message from="assistant">
+                  <MessageContent>
+                    <MessageResponse className="text-destructive">{error.message}</MessageResponse>
+                  </MessageContent>
+                </Message>
+              )}
+            </div>
+          </ScrollArea>*/}
+        </div>
         <Conversation>
           <ConversationContent>
             {messages.map((message, messageIndex) => (
