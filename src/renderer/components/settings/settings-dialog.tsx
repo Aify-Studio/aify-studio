@@ -1,4 +1,4 @@
-import { ArrowLeft, Bolt, Palette, UserCog } from "lucide-react";
+import { ArrowLeft, Bolt, Bot, Palette, UserCog } from "lucide-react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { TitleBar } from "../title-bar";
@@ -16,11 +16,13 @@ import {
 } from "../ui/sidebar";
 import { AppearanceSettings } from "./appearance-settings";
 import { GeneralSettings } from "./general-settings";
+import { ModelSettings } from "./model-settings";
 
 const data = {
   nav: [
     { key: "general", titleKey: "settings.general.title" as const, icon: UserCog },
     { key: "appearance", titleKey: "settings.appearance.title" as const, icon: Palette },
+    { key: "model", titleKey: "settings.model.title" as const, icon: Bot },
   ],
 };
 
@@ -40,7 +42,7 @@ export function SettingsDialog() {
         }
       />
       <DialogContent
-        className="h-screen max-h-none w-screen overflow-hidden rounded-none p-0 sm:max-w-none"
+        className="h-screen max-h-none w-screen overflow-hidden rounded-none bg-sidebar p-0 sm:max-w-none"
         showCloseButton={false}
       >
         <DialogTitle className="sr-only">{t("settings.title")}</DialogTitle>
@@ -75,10 +77,11 @@ export function SettingsDialog() {
               </SidebarGroup>
             </SidebarContent>
           </Sidebar>
-          <SidebarInset className="island min-h-full content-island">
+          <SidebarInset className="island min-h-full flex-1 content-island">
             <TitleBar />
             {activeTab === "appearance" && <AppearanceSettings />}
             {activeTab === "general" && <GeneralSettings />}
+            {activeTab === "model" && <ModelSettings />}
           </SidebarInset>
         </SidebarProvider>
       </DialogContent>

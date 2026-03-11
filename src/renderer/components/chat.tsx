@@ -14,8 +14,6 @@ import {
 } from "../components/ai-elements/message";
 import {
   PromptInput,
-  PromptInputActionMenu,
-  PromptInputActionMenuTrigger,
   PromptInputBody,
   PromptInputFooter,
   type PromptInputMessage,
@@ -122,7 +120,7 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
                     case "text": {
                       const isLastMessage = messageIndex === messages.length - 1;
                       return (
-                        <div key={message.key}>
+                        <div key={message.id}>
                           <Message from={message.role}>
                             <MessageContent>
                               <MessageResponse>{part.text}</MessageResponse>
@@ -170,9 +168,9 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
           </PromptInputBody>
           <PromptInputFooter>
             <PromptInputTools>
-              <PromptInputActionMenu>
+              {/* <PromptInputActionMenu>
                 <PromptInputActionMenuTrigger />
-              </PromptInputActionMenu>
+              </PromptInputActionMenu> */}
               {/*<ModelSelector
                 onOpenChange={setModelSelectorOpen}
                 open={modelSelectorOpen}

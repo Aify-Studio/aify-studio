@@ -25,8 +25,6 @@ export function AppearanceSettings() {
     setCurrentTheme(newTheme);
   }
 
-  console.log(123, currentTheme);
-
   return (
     <div className="mx-auto flex w-2xl flex-col">
       <div className="mb-6 flex">

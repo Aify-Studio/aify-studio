@@ -5,7 +5,7 @@ import { convertToChatMessages } from "@/shared/lib/chat-converter";
 import { generateMessageId } from "@/shared/lib/id-utils";
 import type { ChatMessage } from "../../../shared/lib/chat.schema";
 import { TITLE_PROMPT } from "../infra/ai/prompts";
-import { getTitleModel, openAiCompatibleProvider } from "../infra/ai/providers";
+import { getChatModel, getTitleModel } from "../infra/ai/providers";
 import { getTextFromMessage } from "../infra/ai/utils";
 import type { ChatModel, MessageModel } from "../infra/db/schema";
 import {
@@ -128,7 +128,7 @@ export const createChatRoute = os
       });
     }
 
-    const chatMessages = [...convertToChatMessages(previousMessages), message];
+    const chatMessages = [...(convertToChatMessages(previousMessages) ?? []), message];
 
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
@@ -138,8 +138,9 @@ export const createChatRoute = os
           writer.write({ type: "data-chat-title", data: title });
         });
 
+        const chatModel = await getChatModel();
         const result = streamText({
-          model: openAiCompatibleProvider("qwen-plus"),
+          model: chatModel,
           // system: "You are a helpful assistant.",
           messages: await convertToModelMessages(chatMessages),
         });
@@ -171,8 +172,9 @@ export const createChatRoute = os
   });
 
 export async function generateChatTitle(message: ChatMessage) {
+  const titleModel = await getTitleModel();
   const { text: title } = await generateText({
-    model: getTitleModel(),
+    model: titleModel,
     system: TITLE_PROMPT,
     prompt: getTextFromMessage(message),
   });

@@ -118,7 +118,7 @@ function SidebarProvider({
 }
 function Sidebar({
   side = "left",
-  variant = "sidebar",
+  variant = "inset",
   collapsible = "offcanvas",
   className,
   children,
@@ -263,7 +263,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
   return (
     <main
       className={cn(
-        "relative flex w-full flex-1 flex-col bg-background md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2 md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm",
+        "relative m-2 ml-0 flex w-full flex-1 flex-col bg-background peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2 peer-data-[variant=inset]:m-2 peer-data-[variant=inset]:ml-0 peer-data-[variant=inset]:rounded-xl peer-data-[variant=inset]:shadow-sm",
         className
       )}
       data-slot="sidebar-inset"

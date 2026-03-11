@@ -5,7 +5,7 @@ import { CORSPlugin } from "@orpc/server/plugins";
 import { router } from "./api.router";
 
 const handler = new RPCHandler(router, {
-  plugins: [new CORSPlugin()],
+  plugins: [new CORSPlugin({ origin: "*" })],
   interceptors: [
     onError((error) => {
       console.error(error);

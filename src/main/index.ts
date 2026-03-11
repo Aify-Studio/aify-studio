@@ -61,8 +61,14 @@ function setupIpc() {
 }
 
 function setupApiServer() {
-  runMigrate();
-  apiServer.listen(20_000, "127.0.0.1", () => console.log("Listening on 127.0.0.1:20000"));
+  runMigrate()
+    .then(() => {
+      apiServer.listen(20_000, "127.0.0.1", () => console.log("Listening on 127.0.0.1:20000"));
+    })
+    .catch((error) => {
+      console.error("Failed to initialize database", error);
+      app.quit();
+    });
 }
 
 // This method will be called when Electron has finished

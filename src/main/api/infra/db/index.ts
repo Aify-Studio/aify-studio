@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { app } from "electron";
 import * as schema from "./schema";
+import { seedBuiltinAIData } from "./seed";
 
 const dbPath = process.env.NODE_ENV === "development" ? "./data.db" : path.join(app.getPath("userData"), "data.db");
 const migrationsFolder =
@@ -17,7 +18,9 @@ const client = createClient({ url: `file:${dbPath}` });
 export const db = drizzle(client, { schema });
 
 export const runMigrate = async () => {
-  migrate(db, {
+  await migrate(db, {
     migrationsFolder,
   });
+
+  await seedBuiltinAIData(db);
 };

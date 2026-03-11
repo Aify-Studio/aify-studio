@@ -8,6 +8,10 @@ export const openAiCompatibleProvider = createOpenAICompatible({
   includeUsage: true,
 });
 
+export function getChatModel() {
+  return openAiCompatibleProvider("qwen-plus");
+}
+
 export function getTitleModel() {
   return openAiCompatibleProvider("qwen-plus");
 }
