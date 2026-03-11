@@ -45,6 +45,9 @@ const createWindow = () => {
     app.dock?.setIcon(path.join(__dirname, "../../assets/icons/icon.png"));
   }
 
+  // Start maximized so the window fills the screen on launch.
+  mainWindow.maximize();
+
   // Open the DevTools.
   if (inDevelopment) {
     mainWindow.webContents.openDevTools();

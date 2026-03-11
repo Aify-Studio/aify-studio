@@ -2,6 +2,7 @@ import { useChat } from "@ai-sdk/react";
 import { eventIteratorToUnproxiedDataStream } from "@orpc/client";
 import { CopyIcon, RefreshCcwIcon } from "lucide-react";
 import { Fragment, useRef } from "react";
+import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import type { ChatMessage } from "@/shared/lib/chat.schema";
 import { generateChatId } from "@/shared/lib/id-utils";
 import { Conversation, ConversationContent, ConversationScrollButton } from "../components/ai-elements/conversation";
@@ -115,34 +116,71 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
           <ConversationContent>
             {messages.map((message, messageIndex) => (
               <Fragment key={message.id}>
-                {message.parts.map((part) => {
-                  switch (part.type) {
-                    case "text": {
-                      const isLastMessage = messageIndex === messages.length - 1;
-                      return (
-                        <div key={message.id}>
-                          <Message from={message.role}>
+                {message.role === "user" &&
+                  message.parts.map((part, partIndex) => {
+                    if (part.type !== "text") {
+                      return null;
+                    }
+
+                    return (
+                      <Message from="user" key={`${message.id}-user-text-${partIndex}`}>
+                        <MessageContent>
+                          <MessageResponse>{part.text}</MessageResponse>
+                        </MessageContent>
+                      </Message>
+                    );
+                  })}
+
+                {message.role === "assistant" && (
+                  <div className="flex flex-col gap-2">
+                    {message.parts.map((part, partIndex) => {
+                      if (part.type === "reasoning") {
+                        return (
+                          <Reasoning
+                            className="w-full"
+                            isStreaming={false}
+                            key={`${message.id}-reasoning-${partIndex}`}
+                          >
+                            <ReasoningTrigger />
+                            <ReasoningContent>{part.text}</ReasoningContent>
+                          </Reasoning>
+                        );
+                      }
+
+                      if (part.type === "text") {
+                        return (
+                          <Message from="assistant" key={`${message.id}-assistant-text-${partIndex}`}>
                             <MessageContent>
                               <MessageResponse>{part.text}</MessageResponse>
                             </MessageContent>
                           </Message>
-                          {message.role === "assistant" && isLastMessage && (
-                            <MessageActions>
-                              <MessageAction label="Retry" onClick={() => regenerate()}>
-                                <RefreshCcwIcon className="size-3" />
-                              </MessageAction>
-                              <MessageAction label="Copy" onClick={() => navigator.clipboard.writeText(part.text)}>
-                                <CopyIcon className="size-3" />
-                              </MessageAction>
-                            </MessageActions>
-                          )}
-                        </div>
-                      );
-                    }
-                    default:
+                        );
+                      }
+
                       return null;
-                  }
-                })}
+                    })}
+
+                    {messageIndex === messages.length - 1 && (
+                      <MessageActions>
+                        <MessageAction label="Retry" onClick={() => regenerate()}>
+                          <RefreshCcwIcon className="size-3" />
+                        </MessageAction>
+                        <MessageAction
+                          label="Copy"
+                          onClick={() => {
+                            const text = message.parts
+                              .filter((part) => part.type === "text")
+                              .map((part) => part.text)
+                              .join("\n");
+                            void navigator.clipboard.writeText(text);
+                          }}
+                        >
+                          <CopyIcon className="size-3" />
+                        </MessageAction>
+                      </MessageActions>
+                    )}
+                  </div>
+                )}
               </Fragment>
             ))}
             {error && (

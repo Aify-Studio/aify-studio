@@ -4,14 +4,14 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 export const openAiCompatibleProvider = createOpenAICompatible({
   name: "open-ai-compatible",
   apiKey: process.env.PROVIDER_API_KEY,
-  baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  baseURL: "https://open.bigmodel.cn/api/paas/v4",
   includeUsage: true,
 });
 
 export function getChatModel() {
-  return openAiCompatibleProvider("qwen-plus");
+  return openAiCompatibleProvider("glm-4.7");
 }
 
 export function getTitleModel() {
-  return openAiCompatibleProvider("qwen-plus");
+  return openAiCompatibleProvider("glm-4.7");
 }
