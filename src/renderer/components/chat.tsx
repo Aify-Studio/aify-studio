@@ -1,7 +1,7 @@
 import { useChat } from "@ai-sdk/react";
 import { eventIteratorToUnproxiedDataStream } from "@orpc/client";
 import { CopyIcon, RefreshCcwIcon } from "lucide-react";
-import { Fragment, useRef } from "react";
+import { useRef } from "react";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import type { ChatMessage } from "@/shared/lib/chat.schema";
 import { generateChatId } from "@/shared/lib/id-utils";
@@ -28,6 +28,90 @@ import { apiClient } from "../lib/api-client";
 type ChatProps = {
   chatId: string | undefined;
   initialMessages?: ChatMessage[];
+};
+
+type UserMessageProps = {
+  message: ChatMessage;
+};
+
+const UserMessage = ({ message }: UserMessageProps) => {
+  if (message.role !== "user") {
+    return null;
+  }
+
+  return message.parts.map((part, partIndex) => {
+    if (part.type !== "text") {
+      return null;
+    }
+
+    return (
+      <Message from="user" key={`${message.id}-user-text-${partIndex}`}>
+        <MessageContent>
+          <MessageResponse>{part.text}</MessageResponse>
+        </MessageContent>
+      </Message>
+    );
+  });
+};
+
+type AssistantMessageProps = {
+  message: ChatMessage;
+  isLastMessage: boolean;
+  onRegenerate: () => void;
+};
+
+const AssistantMessage = ({ message, isLastMessage, onRegenerate }: AssistantMessageProps) => {
+  if (message.role !== "assistant") {
+    return null;
+  }
+
+  const assistantText = message.parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
+    .join("\n");
+
+  return (
+    <div className="flex flex-col gap-2">
+      {message.parts.map((part, partIndex) => {
+        if (part.type === "reasoning") {
+          return (
+            <Reasoning className="w-full" isStreaming={false} key={`${message.id}-reasoning-${partIndex}`}>
+              <ReasoningTrigger />
+              <ReasoningContent>{part.text}</ReasoningContent>
+            </Reasoning>
+          );
+        }
+
+        if (part.type === "text") {
+          return (
+            <Message from="assistant" key={`${message.id}-assistant-text-${partIndex}`}>
+              <MessageContent>
+                <MessageResponse>{part.text}</MessageResponse>
+              </MessageContent>
+            </Message>
+          );
+        }
+
+        return null;
+      })}
+
+      {isLastMessage && (
+        <MessageActions>
+          <MessageAction label="Retry" onClick={onRegenerate}>
+            <RefreshCcwIcon className="size-3" />
+          </MessageAction>
+          <MessageAction
+            label="Copy"
+            onClick={() => {
+              void navigator.clipboard.writeText(assistantText);
+            }}
+          >
+            <CopyIcon className="size-3" />
+          </MessageAction>
+        </MessageActions>
+      )}
+    </div>
+  );
 };
 
 export function Chat({ chatId, initialMessages }: ChatProps) {
@@ -64,125 +148,32 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
     }
   };
 
+  const renderMessage = (message: ChatMessage, messageIndex: number) => {
+    if (message.role === "user") {
+      return <UserMessage key={message.id} message={message} />;
+    }
+
+    if (message.role === "assistant") {
+      return (
+        <AssistantMessage
+          isLastMessage={messageIndex === messages.length - 1}
+          key={message.id}
+          message={message}
+          onRegenerate={regenerate}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="overscroll-behavior-contain flex h-dvh w-full flex-1 touch-pan-y flex-col">
       <div className="relative flex-1">
-        <div className="absolute inset-0 flex-1 touch-pan-y overflow-hidden">
-          {/*<ScrollArea className="height: 100%; width: 100%; overflow: auto;">
-            <div className="mx-auto flex min-w-0 max-w-4xl flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
-              {messages.map((message, messageIndex) => (
-                <Fragment key={message.id}>
-                  {message.parts.map((part) => {
-                    switch (part.type) {
-                      case "text": {
-                        const isLastMessage = messageIndex === messages.length - 1;
-                        return (
-                          <div key={message.key}>
-                            <Message from={message.role}>
-                              <MessageContent>
-                                <MessageResponse>{part.text}</MessageResponse>
-                              </MessageContent>
-                            </Message>
-                            {message.role === "assistant" && isLastMessage && (
-                              <MessageActions>
-                                <MessageAction label="Retry" onClick={() => regenerate()}>
-                                  <RefreshCcwIcon className="size-3" />
-                                </MessageAction>
-                                <MessageAction label="Copy" onClick={() => navigator.clipboard.writeText(part.text)}>
-                                  <CopyIcon className="size-3" />
-                                </MessageAction>
-                              </MessageActions>
-                            )}
-                          </div>
-                        );
-                      }
-                      default:
-                        return null;
-                    }
-                  })}
-                </Fragment>
-              ))}
-              {error && (
-                <Message from="assistant">
-                  <MessageContent>
-                    <MessageResponse className="text-destructive">{error.message}</MessageResponse>
-                  </MessageContent>
-                </Message>
-              )}
-            </div>
-          </ScrollArea>*/}
-        </div>
+        <div className="absolute inset-0 flex-1 touch-pan-y overflow-hidden"></div>
         <Conversation>
           <ConversationContent>
-            {messages.map((message, messageIndex) => (
-              <Fragment key={message.id}>
-                {message.role === "user" &&
-                  message.parts.map((part, partIndex) => {
-                    if (part.type !== "text") {
-                      return null;
-                    }
-
-                    return (
-                      <Message from="user" key={`${message.id}-user-text-${partIndex}`}>
-                        <MessageContent>
-                          <MessageResponse>{part.text}</MessageResponse>
-                        </MessageContent>
-                      </Message>
-                    );
-                  })}
-
-                {message.role === "assistant" && (
-                  <div className="flex flex-col gap-2">
-                    {message.parts.map((part, partIndex) => {
-                      if (part.type === "reasoning") {
-                        return (
-                          <Reasoning
-                            className="w-full"
-                            isStreaming={false}
-                            key={`${message.id}-reasoning-${partIndex}`}
-                          >
-                            <ReasoningTrigger />
-                            <ReasoningContent>{part.text}</ReasoningContent>
-                          </Reasoning>
-                        );
-                      }
-
-                      if (part.type === "text") {
-                        return (
-                          <Message from="assistant" key={`${message.id}-assistant-text-${partIndex}`}>
-                            <MessageContent>
-                              <MessageResponse>{part.text}</MessageResponse>
-                            </MessageContent>
-                          </Message>
-                        );
-                      }
-
-                      return null;
-                    })}
-
-                    {messageIndex === messages.length - 1 && (
-                      <MessageActions>
-                        <MessageAction label="Retry" onClick={() => regenerate()}>
-                          <RefreshCcwIcon className="size-3" />
-                        </MessageAction>
-                        <MessageAction
-                          label="Copy"
-                          onClick={() => {
-                            const text = message.parts
-                              .filter((part) => part.type === "text")
-                              .map((part) => part.text)
-                              .join("\n");
-                            void navigator.clipboard.writeText(text);
-                          }}
-                        >
-                          <CopyIcon className="size-3" />
-                        </MessageAction>
-                      </MessageActions>
-                    )}
-                  </div>
-                )}
-              </Fragment>
-            ))}
+            {messages.map(renderMessage)}
             {error && (
               <Message from="assistant">
                 <MessageContent>
@@ -205,68 +196,7 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
             <PromptInputTextarea ref={textareaRef} />
           </PromptInputBody>
           <PromptInputFooter>
-            <PromptInputTools>
-              {/* <PromptInputActionMenu>
-                <PromptInputActionMenuTrigger />
-              </PromptInputActionMenu> */}
-              {/*<ModelSelector
-                onOpenChange={setModelSelectorOpen}
-                open={modelSelectorOpen}
-              >
-                <ModelSelectorTrigger asChild>
-                  <PromptInputButton>
-                    {selectedModelData?.chefSlug && (
-                      <ModelSelectorLogo
-                        provider={selectedModelData.chefSlug}
-                      />
-                    )}
-                    {selectedModelData?.name && (
-                      <ModelSelectorName>
-                        {selectedModelData.name}
-                      </ModelSelectorName>
-                    )}
-                  </PromptInputButton>
-                </ModelSelectorTrigger>
-                <ModelSelectorContent>
-                  <ModelSelectorInput placeholder="Search models..." />
-                  <ModelSelectorList>
-                    <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
-                    {["OpenAI", "Anthropic", "Google"].map((chef) => (
-                      <ModelSelectorGroup heading={chef} key={chef}>
-                        {models
-                          .filter((m) => m.chef === chef)
-                          .map((m) => (
-                            <ModelSelectorItem
-                              key={m.id}
-                              onSelect={() => {
-                                setModel(m.id);
-                                setModelSelectorOpen(false);
-                              }}
-                              value={m.id}
-                            >
-                              <ModelSelectorLogo provider={m.chefSlug} />
-                              <ModelSelectorName>{m.name}</ModelSelectorName>
-                              <ModelSelectorLogoGroup>
-                                {m.providers.map((provider) => (
-                                  <ModelSelectorLogo
-                                    key={provider}
-                                    provider={provider}
-                                  />
-                                ))}
-                              </ModelSelectorLogoGroup>
-                              {model === m.id ? (
-                                <CheckIcon className="ml-auto size-4" />
-                              ) : (
-                                <div className="ml-auto size-4" />
-                              )}
-                            </ModelSelectorItem>
-                          ))}
-                      </ModelSelectorGroup>
-                    ))}
-                  </ModelSelectorList>
-                </ModelSelectorContent>
-              </ModelSelector>*/}
-            </PromptInputTools>
+            <PromptInputTools></PromptInputTools>
             <PromptInputSubmit status={status} />
           </PromptInputFooter>
         </PromptInput>

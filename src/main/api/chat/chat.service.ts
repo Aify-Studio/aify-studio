@@ -143,6 +143,12 @@ export const createChatRoute = os
           model: chatModel,
           // system: "You are a helpful assistant.",
           messages: await convertToModelMessages(chatMessages),
+          onAbort: (e) => {
+            console.log(`streamText aborted, chatId: ${chatId}.`, e);
+          },
+          onError: (e) => {
+            console.log(`streamText error, chatId: ${chatId}.`, e);
+          },
         });
 
         // consume the stream to ensure it runs to completion & triggers onFinish
@@ -163,7 +169,8 @@ export const createChatRoute = os
           }))
         );
       },
-      onError: () => {
+      onError: (e) => {
+        console.log(`createUIMessageStream error, chatId: ${chatId}.`, e);
         return "Oops, an error occurred!";
       },
     });
