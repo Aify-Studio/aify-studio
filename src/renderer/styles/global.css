@@ -129,6 +129,7 @@
 
   html {
     @apply font-sans;
+    font-size: 14.8571px;
   }
 }
 

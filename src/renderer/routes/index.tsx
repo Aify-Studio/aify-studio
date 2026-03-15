@@ -25,7 +25,7 @@ function HomePage() {
 
   return (
     <SidebarProvider>
-      <AppSidebar className="primary-island island">
+      <AppSidebar className="primary-island island" variant="inset">
         <TitleBar className="pl-20 text-muted-foreground">
           <SidebarTrigger className="no-drag" />
         </TitleBar>
