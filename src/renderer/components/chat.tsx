@@ -12,19 +12,19 @@ import {
   ConfirmationRejected,
   ConfirmationRequest,
   ConfirmationTitle,
-} from "@/components/ai-elements/confirmation";
-import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
-import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
-import type { ChatMessage } from "@/shared/lib/chat.schema";
-import { generateChatId } from "@/shared/lib/id-utils";
-import { Conversation, ConversationContent, ConversationScrollButton } from "../components/ai-elements/conversation";
+} from "@/renderer/components/ai-elements/confirmation";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/renderer/components/ai-elements/conversation";
 import {
   Message,
   MessageAction,
   MessageActions,
   MessageContent,
   MessageResponse,
-} from "../components/ai-elements/message";
+} from "@/renderer/components/ai-elements/message";
 import {
   PromptInput,
   PromptInputBody,
@@ -34,7 +34,11 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
-} from "../components/ai-elements/prompt-input";
+} from "@/renderer/components/ai-elements/prompt-input";
+import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/renderer/components/ai-elements/reasoning";
+import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/renderer/components/ai-elements/tool";
+import type { ChatMessage } from "@/shared/lib/chat.schema";
+import { generateChatId } from "@/shared/lib/id-utils";
 import { apiClient } from "../lib/api-client";
 
 type ChatProps = {
