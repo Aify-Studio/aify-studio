@@ -54,6 +54,7 @@
     "vite": "^7.3.0"
   },
   "dependencies": {
+    "@ai-sdk/devtools": "^0.0.15",
     "@ai-sdk/openai-compatible": "^2.0.2",
     "@ai-sdk/react": "^3.0.6",
     "@base-ui/react": "^1.2.0",
@@ -87,6 +88,7 @@
     "react-i18next": "^16.5.0",
     "resumable-stream": "^2.2.10",
     "shadcn": "^4.0.2",
+    "shiki": "^4.0.2",
     "streamdown": "^1.6.11",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.0.6",

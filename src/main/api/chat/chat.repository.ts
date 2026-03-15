@@ -62,3 +62,7 @@ export async function saveMessage(message: MessageModel) {
 export async function saveMessages(messages: MessageModel[]) {
   return await db.insert(message_table).values(messages);
 }
+
+export async function updateMessage(id: string, parts: unknown) {
+  return await db.update(message_table).set({ parts }).where(eq(message_table.id, id));
+}

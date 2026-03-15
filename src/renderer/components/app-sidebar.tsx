@@ -1,6 +1,7 @@
 import { Button } from "@base-ui/react/button";
 import { useQuery } from "@tanstack/react-query";
 import { SquarePen } from "lucide-react";
+import { generateChatId } from "@/shared/lib/id-utils";
 import { apiClient } from "../lib/api-client";
 import { useAppStore } from "../stores";
 import { SettingsDialog } from "./settings/settings-dialog";
@@ -34,7 +35,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>
+                  <SidebarMenuButton onClick={() => setChatId(generateChatId())}>
                     <SquarePen strokeWidth={1.5} />
                     <span>New thread</span>
                   </SidebarMenuButton>

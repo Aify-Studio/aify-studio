@@ -1,5 +1,7 @@
 import "dotenv/config";
+import { devToolsMiddleware } from "@ai-sdk/devtools";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { wrapLanguageModel } from "ai";
 
 export const openAiCompatibleProvider = createOpenAICompatible({
   name: "open-ai-compatible",
@@ -9,7 +11,10 @@ export const openAiCompatibleProvider = createOpenAICompatible({
 });
 
 export function getChatModel() {
-  return openAiCompatibleProvider("glm-4.7");
+  return wrapLanguageModel({
+    model: openAiCompatibleProvider("glm-4.7"),
+    middleware: devToolsMiddleware(),
+  });
 }
 
 export function getTitleModel() {

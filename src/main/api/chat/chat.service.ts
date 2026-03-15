@@ -1,21 +1,28 @@
 import { ORPCError, os, streamToEventIterator, type } from "@orpc/server";
-import { convertToModelMessages, createUIMessageStream, generateText, JsonToSseTransformStream, streamText } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  generateText,
+  JsonToSseTransformStream,
+  stepCountIs,
+  streamText,
+} from "ai";
 import z from "zod";
-import { convertToChatMessages } from "@/shared/lib/chat-converter";
 import { generateMessageId } from "@/shared/lib/id-utils";
 import type { ChatMessage } from "../../../shared/lib/chat.schema";
+import { askForConfirmationTool, getLocationTool, getWeatherInformationTool } from "../../../shared/tools";
 import { TITLE_PROMPT } from "../infra/ai/prompts";
 import { getChatModel, getTitleModel } from "../infra/ai/providers";
 import { getTextFromMessage } from "../infra/ai/utils";
-import type { ChatModel, MessageModel } from "../infra/db/schema";
+import type { ChatModel } from "../infra/db/schema";
 import {
   getChatById,
   getMessagesByChatId,
   listChats,
   saveChat,
   saveMessage,
-  saveMessages,
   updateChatTitleById,
+  updateMessage,
 } from "./chat.repository";
 
 export const listChatsRoute = os
@@ -47,9 +54,7 @@ export const getChatMessagesRoute = os
     }
 
     if (!chat) {
-      throw new ORPCError("BAD_REQUEST", {
-        message: "chat not found.",
-      });
+      return [];
     }
 
     return await getMessagesByChatId(chat.id);
@@ -95,21 +100,20 @@ export const getChatStreamRoute = os
 
 export const createChatRoute = os
   .route({ method: "POST", path: "/chat" })
-  .input(type<{ chatId: string; messages?: ChatMessage[]; message?: ChatMessage }>())
+  .input(type<{ chatId: string; messages?: ChatMessage[] }>())
   .handler(async ({ input }) => {
-    const { chatId, message } = input;
-    if (!message) {
+    const { chatId, messages } = input;
+    if (!messages?.length) {
       throw new ORPCError("BAD_REQUEST", {
         message: "message is blank.",
       });
     }
 
-    let previousMessages: MessageModel[] = [];
     let titlePromise: Promise<string> | null = null;
 
+    const message = messages.at(-1);
     const chat = await getChatById(chatId);
     if (chat) {
-      previousMessages = await getMessagesByChatId(chatId);
     } else if (message?.role === "user") {
       await saveChat({ id: chatId, title: "New chat" });
 
@@ -128,9 +132,10 @@ export const createChatRoute = os
       });
     }
 
-    const chatMessages = [...(convertToChatMessages(previousMessages) ?? []), message];
+    const chatMessages = [...messages];
 
     const stream = createUIMessageStream({
+      originalMessages: chatMessages,
       execute: async ({ writer }) => {
         // Handle title generation in parallel
         titlePromise?.then((title) => {
@@ -139,10 +144,20 @@ export const createChatRoute = os
         });
 
         const chatModel = await getChatModel();
+
         const result = streamText({
           model: chatModel,
           // system: "You are a helpful assistant.",
           messages: await convertToModelMessages(chatMessages),
+          tools: {
+            // server-side tool with execute function:
+            getWeatherInformation: getWeatherInformationTool,
+            // client-side tool that starts user interaction:
+            askForConfirmation: askForConfirmationTool,
+            // client-side tool that is automatically executed on the client:
+            getLocation: getLocationTool,
+          },
+          stopWhen: stepCountIs(20),
           onAbort: (e) => {
             console.log(`streamText aborted, chatId: ${chatId}.`, e);
           },
@@ -159,19 +174,42 @@ export const createChatRoute = os
       },
       generateId: generateMessageId,
       onFinish: async ({ messages: finishedMessages }) => {
-        await saveMessages(
-          finishedMessages.map((currentMessage) => ({
-            id: currentMessage.id,
+        for (const finishedMsg of finishedMessages) {
+          if (!finishedMsg.parts.length) {
+            continue;
+          }
+
+          const existingMsg = chatMessages.find((m) => m.id === finishedMsg.id);
+          if (existingMsg) {
+            await updateMessage(finishedMsg.id, finishedMsg.parts);
+            continue;
+          }
+
+          await saveMessage({
+            id: finishedMsg.id,
             chatId,
-            role: currentMessage.role,
-            parts: currentMessage.parts,
+            role: finishedMsg.role,
+            parts: finishedMsg.parts,
             createdAt: new Date(),
-          }))
-        );
+          });
+        }
       },
       onError: (e) => {
         console.log(`createUIMessageStream error, chatId: ${chatId}.`, e);
-        return "Oops, an error occurred!";
+        if (e == null) {
+          return "unknown error";
+        }
+
+        if (typeof e === "string") {
+          return e;
+        }
+
+        if (e instanceof Error) {
+          return e.message;
+        }
+
+        return JSON.stringify(e);
+        // return "Oops, an error occurred!";
       },
     });
 
