@@ -9,6 +9,7 @@ import {
 } from "ai";
 import z from "zod";
 import { generateMessageId } from "@/shared/lib/id-utils";
+import { bashTool } from "@/shared/tools/bash";
 import type { ChatMessage } from "../../../shared/lib/chat.schema";
 import { askForConfirmationTool, getLocationTool, getWeatherInformationTool } from "../../../shared/tools";
 import { TITLE_PROMPT } from "../infra/ai/prompts";
@@ -156,6 +157,7 @@ export const createChatRoute = os
             askForConfirmation: askForConfirmationTool,
             // client-side tool that is automatically executed on the client:
             getLocation: getLocationTool,
+            bash: bashTool,
           },
           stopWhen: stepCountIs(20),
           onAbort: (e) => {

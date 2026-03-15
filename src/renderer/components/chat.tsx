@@ -40,6 +40,7 @@ import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/renderer
 import type { ChatMessage } from "@/shared/lib/chat.schema";
 import { generateChatId } from "@/shared/lib/id-utils";
 import { apiClient } from "../lib/api-client";
+import { BashTool } from "./tools/bash";
 
 type ChatProps = {
   chatId: string | undefined;
@@ -65,6 +66,16 @@ const UserMessage = ({ message }: UserMessageProps) => {
         <MessageContent>
           <MessageResponse>{part.text}</MessageResponse>
         </MessageContent>
+        <MessageActions className="pointer-events-none ml-auto opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+          <MessageAction
+            label="Copy"
+            onClick={() => {
+              void navigator.clipboard.writeText(part.text);
+            }}
+          >
+            <CopyIcon className="size-3" />
+          </MessageAction>
+        </MessageActions>
       </Message>
     );
   });
@@ -72,27 +83,15 @@ const UserMessage = ({ message }: UserMessageProps) => {
 
 type AssistantMessageProps = {
   message: ChatMessage;
-  isLastMessage: boolean;
   regenerate: UseChatHelpers<ChatMessage>["regenerate"];
   addToolOutput: UseChatHelpers<ChatMessage>["addToolOutput"];
   addToolApprovalResponse: UseChatHelpers<ChatMessage>["addToolApprovalResponse"];
 };
 
-const AssistantMessage = ({
-  addToolOutput,
-  addToolApprovalResponse,
-  message,
-  isLastMessage,
-  regenerate,
-}: AssistantMessageProps) => {
+const AssistantMessage = ({ addToolOutput, addToolApprovalResponse, message, regenerate }: AssistantMessageProps) => {
   if (message.role !== "assistant") {
     return null;
   }
-
-  const assistantText = message.parts
-    .filter((part) => part.type === "text")
-    .map((part) => part.text)
-    .join("\n");
 
   return (
     <div className="flex flex-col gap-2">
@@ -391,34 +390,37 @@ const AssistantMessage = ({
           );
         }
 
+        if (part.type === "tool-bash") {
+          return (
+            <BashTool addToolApprovalResponse={addToolApprovalResponse} addToolOutput={addToolOutput} part={part} />
+          );
+        }
+
         if (part.type === "text") {
           return (
             <Message from="assistant" key={`${message.id}-assistant-text-${partIndex}`}>
               <MessageContent>
                 <MessageResponse>{part.text}</MessageResponse>
               </MessageContent>
+              <MessageActions className="pointer-events-none mr-auto opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+                <MessageAction label="Retry" onClick={() => regenerate()}>
+                  <RefreshCcwIcon className="size-3" />
+                </MessageAction>
+                <MessageAction
+                  label="Copy"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(part.text);
+                  }}
+                >
+                  <CopyIcon className="size-3" />
+                </MessageAction>
+              </MessageActions>
             </Message>
           );
         }
 
         return null;
       })}
-
-      {isLastMessage && (
-        <MessageActions>
-          <MessageAction label="Retry" onClick={() => regenerate()}>
-            <RefreshCcwIcon className="size-3" />
-          </MessageAction>
-          <MessageAction
-            label="Copy"
-            onClick={() => {
-              void navigator.clipboard.writeText(assistantText);
-            }}
-          >
-            <CopyIcon className="size-3" />
-          </MessageAction>
-        </MessageActions>
-      )}
     </div>
   );
 };
@@ -475,7 +477,7 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
     }
   };
 
-  const renderMessage = (message: ChatMessage, messageIndex: number) => {
+  const renderMessage = (message: ChatMessage) => {
     if (message.role === "user") {
       return <UserMessage key={message.id} message={message} />;
     }
@@ -485,7 +487,6 @@ export function Chat({ chatId, initialMessages }: ChatProps) {
         <AssistantMessage
           addToolApprovalResponse={addToolApprovalResponse}
           addToolOutput={addToolOutput}
-          isLastMessage={messageIndex === messages.length - 1}
           key={message.id}
           message={message}
           regenerate={regenerate}

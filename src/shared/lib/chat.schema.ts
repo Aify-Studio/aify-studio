@@ -1,6 +1,7 @@
 import type { InferUITools, ToolSet, UIMessage } from "ai";
 import z from "zod";
 import { askForConfirmationTool, getLocationTool, getWeatherInformationTool } from "@/shared/tools";
+import { bashTool } from "@/shared/tools/bash";
 
 export const metadataSchema = z.object({
   createdAt: z.string(),
@@ -19,6 +20,7 @@ const tools = {
   askForConfirmation: askForConfirmationTool,
   // client-side tool that is automatically executed on the client:
   getLocation: getLocationTool,
+  bash: bashTool,
 } satisfies ToolSet;
 
 export type ChatTools = InferUITools<typeof tools>;
