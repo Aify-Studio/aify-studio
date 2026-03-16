@@ -41,6 +41,8 @@ import type { ChatMessage } from "@/shared/lib/chat.schema";
 import { generateChatId } from "@/shared/lib/id-utils";
 import { apiClient } from "../lib/api-client";
 import { BashTool } from "./tools/bash";
+import { ReadTool } from "./tools/read";
+import { WriteTool } from "./tools/write";
 
 type ChatProps = {
   chatId: string | undefined;
@@ -393,6 +395,18 @@ const AssistantMessage = ({ addToolOutput, addToolApprovalResponse, message, reg
         if (part.type === "tool-bash") {
           return (
             <BashTool addToolApprovalResponse={addToolApprovalResponse} addToolOutput={addToolOutput} part={part} />
+          );
+        }
+
+        if (part.type === "tool-read") {
+          return (
+            <ReadTool addToolApprovalResponse={addToolApprovalResponse} addToolOutput={addToolOutput} part={part} />
+          );
+        }
+
+        if (part.type === "tool-write") {
+          return (
+            <WriteTool addToolApprovalResponse={addToolApprovalResponse} addToolOutput={addToolOutput} part={part} />
           );
         }
 

@@ -10,6 +10,8 @@ import {
 import z from "zod";
 import { generateMessageId } from "@/shared/lib/id-utils";
 import { bashTool } from "@/shared/tools/bash";
+import { readTool } from "@/shared/tools/read";
+import { writeTool } from "@/shared/tools/write";
 import type { ChatMessage } from "../../../shared/lib/chat.schema";
 import { askForConfirmationTool, getLocationTool, getWeatherInformationTool } from "../../../shared/tools";
 import { TITLE_PROMPT } from "../infra/ai/prompts";
@@ -158,6 +160,8 @@ export const createChatRoute = os
             // client-side tool that is automatically executed on the client:
             getLocation: getLocationTool,
             bash: bashTool,
+            read: readTool,
+            write: writeTool,
           },
           stopWhen: stepCountIs(20),
           onAbort: (e) => {
