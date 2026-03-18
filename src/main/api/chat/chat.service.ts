@@ -10,6 +10,7 @@ import {
 } from "ai";
 import z from "zod";
 import type { AgentContext } from "@/shared/agent/context";
+import { createChromeDevtoolsMcpClient } from "@/shared/agent/mcp";
 import { generateMessageId } from "@/shared/lib/id-utils";
 import { createBashTool } from "@/shared/tools/bash";
 import { readTool } from "@/shared/tools/read";
@@ -153,6 +154,12 @@ export const createChatRoute = os
 
         const chatModel = await getChatModel();
 
+        const chromeDevtoolsMcpClient = await createChromeDevtoolsMcpClient();
+        const chromeDevtoolMcpTools = await chromeDevtoolsMcpClient.tools();
+        const mcpTools: Record<string, any> = {
+          ...chromeDevtoolMcpTools,
+        };
+
         const result = streamText({
           model: chatModel,
           // system: "You are a helpful assistant.",
@@ -161,6 +168,7 @@ export const createChatRoute = os
             bash: createBashTool({ context: agentContext }),
             read: readTool,
             write: writeTool,
+            ...mcpTools,
           },
           stopWhen: stepCountIs(20),
           experimental_context: agentContext,
@@ -169,6 +177,9 @@ export const createChatRoute = os
           },
           onError: (e) => {
             console.log(`streamText error, chatId: ${chatId}.`, e);
+          },
+          onFinish: async () => {
+            await chromeDevtoolsMcpClient.close();
           },
         });
 
