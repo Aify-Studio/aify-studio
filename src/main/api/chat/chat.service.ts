@@ -13,7 +13,6 @@ import { bashTool } from "@/shared/tools/bash";
 import { readTool } from "@/shared/tools/read";
 import { writeTool } from "@/shared/tools/write";
 import type { ChatMessage } from "../../../shared/lib/chat.schema";
-import { askForConfirmationTool, getLocationTool, getWeatherInformationTool } from "../../../shared/tools";
 import { TITLE_PROMPT } from "../infra/ai/prompts";
 import { getChatModel, getTitleModel } from "../infra/ai/providers";
 import { getTextFromMessage } from "../infra/ai/utils";
@@ -153,12 +152,6 @@ export const createChatRoute = os
           // system: "You are a helpful assistant.",
           messages: await convertToModelMessages(chatMessages),
           tools: {
-            // server-side tool with execute function:
-            getWeatherInformation: getWeatherInformationTool,
-            // client-side tool that starts user interaction:
-            askForConfirmation: askForConfirmationTool,
-            // client-side tool that is automatically executed on the client:
-            getLocation: getLocationTool,
             bash: bashTool,
             read: readTool,
             write: writeTool,
