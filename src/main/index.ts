@@ -66,7 +66,7 @@ function setupIpc() {
 function setupApiServer() {
   runMigrate()
     .then(() => {
-      apiServer.listen(19_757, "127.0.0.1", () => console.log("Listening on 127.0.0.1:19757"));
+      apiServer.listen(18_086, "127.0.0.1", () => console.log("Listening on 127.0.0.1:18086"));
     })
     .catch((error) => {
       console.error("Failed to initialize database", error);

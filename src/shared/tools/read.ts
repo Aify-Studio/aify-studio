@@ -4,6 +4,7 @@ import * as path from "node:path";
 import { createInterface } from "node:readline";
 import { type InferUITool, tool } from "ai";
 import { z } from "zod";
+import type { AgentContext } from "../agent/context";
 
 const DEFAULT_READ_LIMIT = 2000;
 const MAX_LINE_LENGTH = 2000;
@@ -27,11 +28,13 @@ export const readTool = tool({
     limit: z.coerce.number().int().positive().optional().describe("Maximum lines/entries to read"),
   }),
   needsApproval: true,
-  execute: async ({ filePath, offset, limit }) => {
+  execute: async ({ filePath, offset, limit }, { experimental_context }) => {
+    const context = experimental_context as AgentContext;
+    const cwd = context.workdir;
     const normalizedOffset = offset ?? 1;
     const normalizedLimit = limit ?? DEFAULT_READ_LIMIT;
 
-    const resolvedPath = path.isAbsolute(filePath) ? path.normalize(filePath) : path.resolve(process.cwd(), filePath);
+    const resolvedPath = path.isAbsolute(filePath) ? path.normalize(filePath) : path.resolve(cwd, filePath);
     const stat = await safeStat(resolvedPath);
 
     if (!stat) {
@@ -50,7 +53,7 @@ export const readTool = tool({
       });
 
       return {
-        title: path.relative(process.cwd(), resolvedPath) || resolvedPath,
+        title: path.relative(cwd, resolvedPath) || resolvedPath,
         output,
       };
     }
@@ -69,6 +72,12 @@ export const readTool = tool({
     return {
       title: path.relative(process.cwd(), resolvedPath) || resolvedPath,
       output,
+    };
+  },
+  toModelOutput: ({ output }) => {
+    return {
+      type: "text",
+      value: output.output,
     };
   },
 });

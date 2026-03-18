@@ -1,3 +1,4 @@
+import { homedir } from "node:os";
 import { ORPCError, os, streamToEventIterator, type } from "@orpc/server";
 import {
   convertToModelMessages,
@@ -8,8 +9,9 @@ import {
   streamText,
 } from "ai";
 import z from "zod";
+import type { AgentContext } from "@/shared/agent/context";
 import { generateMessageId } from "@/shared/lib/id-utils";
-import { bashTool } from "@/shared/tools/bash";
+import { createBashTool } from "@/shared/tools/bash";
 import { readTool } from "@/shared/tools/read";
 import { writeTool } from "@/shared/tools/write";
 import type { ChatMessage } from "../../../shared/lib/chat.schema";
@@ -136,6 +138,10 @@ export const createChatRoute = os
 
     const chatMessages = [...messages];
 
+    const agentContext: AgentContext = {
+      workdir: homedir(),
+    };
+
     const stream = createUIMessageStream({
       originalMessages: chatMessages,
       execute: async ({ writer }) => {
@@ -152,11 +158,12 @@ export const createChatRoute = os
           // system: "You are a helpful assistant.",
           messages: await convertToModelMessages(chatMessages),
           tools: {
-            bash: bashTool,
+            bash: createBashTool({ context: agentContext }),
             read: readTool,
             write: writeTool,
           },
           stopWhen: stepCountIs(20),
+          experimental_context: agentContext,
           onAbort: (e) => {
             console.log(`streamText aborted, chatId: ${chatId}.`, e);
           },
