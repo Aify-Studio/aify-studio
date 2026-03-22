@@ -13,10 +13,11 @@ import type { AgentContext } from "@/shared/agent/context";
 import { createChromeDevtoolsMcpClient } from "@/shared/agent/mcp";
 import { generateMessageId } from "@/shared/lib/id-utils";
 import { createBashTool } from "@/shared/tools/bash";
-import { readTool } from "@/shared/tools/read";
-import { writeTool } from "@/shared/tools/write";
+import { createReadTool } from "@/shared/tools/read";
+import { createTaskTool } from "@/shared/tools/task";
+import { createWriteTool } from "@/shared/tools/write";
 import type { ChatMessage } from "../../../shared/lib/chat.schema";
-import { TITLE_PROMPT } from "../infra/ai/prompts";
+import { AGENT_ORCHESTRATION_PROMPT, TITLE_PROMPT } from "../infra/ai/prompts";
 import { getChatModel, getTitleModel } from "../infra/ai/providers";
 import { getTextFromMessage } from "../infra/ai/utils";
 import type { ChatModel } from "../infra/db/schema";
@@ -161,14 +162,32 @@ export const createChatRoute = os
           ...chromeDevtoolMcpTools,
         };
 
+        const bashTool = createBashTool({ context: agentContext, needsApproval: true });
+        const readTool = createReadTool({ needsApproval: true });
+        const writeTool = createWriteTool({ needsApproval: true });
+
+        const childBashTool = createBashTool({ context: agentContext, needsApproval: false });
+        const childReadTool = createReadTool({ needsApproval: false });
+        const childWriteTool = createWriteTool({ needsApproval: false });
+
         const result = streamText({
           model: chatModel,
-          // system: "You are a helpful assistant.",
+          system: AGENT_ORCHESTRATION_PROMPT,
           messages: await convertToModelMessages(chatMessages),
           tools: {
-            bash: createBashTool({ context: agentContext }),
+            bash: bashTool,
             read: readTool,
             write: writeTool,
+            task: createTaskTool({
+              context: agentContext,
+              model: chatModel,
+              childTools: {
+                bash: childBashTool,
+                read: childReadTool,
+                write: childWriteTool,
+                ...mcpTools,
+              },
+            }),
             ...mcpTools,
           },
           stopWhen: stepCountIs(20),

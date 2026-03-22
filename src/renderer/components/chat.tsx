@@ -31,6 +31,7 @@ import { generateChatId } from "@/shared/lib/id-utils";
 import { apiClient } from "../lib/api-client";
 import { BashTool } from "./tools/bash";
 import { ReadTool } from "./tools/read";
+import { TaskTool } from "./tools/task";
 import { WriteTool } from "./tools/write";
 
 type ChatProps = {
@@ -111,6 +112,12 @@ const AssistantMessage = ({ addToolOutput, addToolApprovalResponse, message, reg
         if (part.type === "tool-write") {
           return (
             <WriteTool addToolApprovalResponse={addToolApprovalResponse} addToolOutput={addToolOutput} part={part} />
+          );
+        }
+
+        if (part.type === "tool-task") {
+          return (
+            <TaskTool addToolApprovalResponse={addToolApprovalResponse} addToolOutput={addToolOutput} part={part} />
           );
         }
 

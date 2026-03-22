@@ -17,35 +17,40 @@ const fileExists = async (filePath: string): Promise<boolean> => {
   }
 };
 
-export const writeTool = tool({
-  description: DESCRIPTION,
-  inputSchema: z.object({
-    content: z.string().describe("The full content to write into the target file"),
-    filePath: z.string().describe("The absolute path to the file to write (must be absolute, not relative)"),
-  }),
-  needsApproval: true,
-  execute: async ({ content, filePath }, { experimental_context }) => {
-    const context = experimental_context as AgentContext;
-    const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(context.workdir, filePath);
-    const existed = await fileExists(absolutePath);
-    if (!existed) {
-      await mkdir(path.dirname(absolutePath), { recursive: true });
-    }
-    await writeFile(absolutePath, content, "utf8");
+interface CreateWriteToolOptions {
+  needsApproval?: boolean;
+}
 
-    const relativePath = path.relative(context.workdir, absolutePath);
+export const createWriteTool = ({ needsApproval = true }: CreateWriteToolOptions = {}) =>
+  tool({
+    description: DESCRIPTION,
+    inputSchema: z.object({
+      content: z.string().describe("The full content to write into the target file"),
+      filePath: z.string().describe("The absolute path to the file to write (must be absolute, not relative)"),
+    }),
+    needsApproval,
+    execute: async ({ content, filePath }, { experimental_context }) => {
+      const context = experimental_context as AgentContext;
+      const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(context.workdir, filePath);
+      const existed = await fileExists(absolutePath);
+      if (!existed) {
+        await mkdir(path.dirname(absolutePath), { recursive: true });
+      }
+      await writeFile(absolutePath, content, "utf8");
 
-    return {
-      title: relativePath,
-      output: "Wrote file successfully.",
-    };
-  },
-  toModelOutput: ({ output }) => {
-    return {
-      type: "text",
-      value: output.output,
-    };
-  },
-});
+      const relativePath = path.relative(context.workdir, absolutePath);
 
-export type WriteToolType = InferUITool<typeof writeTool>;
+      return {
+        title: relativePath,
+        output: "Wrote file successfully.",
+      };
+    },
+    toModelOutput: ({ output }) => {
+      return {
+        type: "text",
+        value: output.output,
+      };
+    },
+  });
+
+export type WriteToolType = InferUITool<ReturnType<typeof createWriteTool>>;

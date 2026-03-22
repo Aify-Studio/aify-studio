@@ -13,9 +13,10 @@ const DESCRIPTION = `Execute a shell command in the working directory.
 
 type CreateBashToolProps = {
   context: AgentContext;
+  needsApproval?: boolean;
 };
 
-export const createBashTool = ({ context }: CreateBashToolProps) =>
+export const createBashTool = ({ context, needsApproval = true }: CreateBashToolProps) =>
   tool({
     description: DESCRIPTION,
     inputSchema: z.object({
@@ -33,7 +34,7 @@ export const createBashTool = ({ context }: CreateBashToolProps) =>
           "Clear, concise description of what this command does in 5-10 words. Examples:\nInput: ls\nOutput: Lists files in current directory\n\nInput: git status\nOutput: Shows working tree status\n\nInput: npm install\nOutput: Installs package dependencies"
         ),
     }),
-    needsApproval: true,
+    needsApproval,
     execute: async ({ command, timeout, workdir, description }, { experimental_context, abortSignal }) => {
       const context = experimental_context as AgentContext;
       const cwd = workdir ?? context.workdir;

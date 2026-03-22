@@ -20,67 +20,72 @@ const DESCRIPTION = `Read files or directories from the local workspace.
 
 type Stat = Awaited<ReturnType<typeof fs.stat>>;
 
-export const readTool = tool({
-  description: DESCRIPTION,
-  inputSchema: z.object({
-    filePath: z.string().describe("Absolute or relative file/directory path to read"),
-    offset: z.coerce.number().int().positive().optional().describe("Start line/entry number (1-indexed)"),
-    limit: z.coerce.number().int().positive().optional().describe("Maximum lines/entries to read"),
-  }),
-  needsApproval: true,
-  execute: async ({ filePath, offset, limit }, { experimental_context }) => {
-    const context = experimental_context as AgentContext;
-    const cwd = context.workdir;
-    const normalizedOffset = offset ?? 1;
-    const normalizedLimit = limit ?? DEFAULT_READ_LIMIT;
+interface CreateReadToolOptions {
+  needsApproval?: boolean;
+}
 
-    const resolvedPath = path.isAbsolute(filePath) ? path.normalize(filePath) : path.resolve(cwd, filePath);
-    const stat = await safeStat(resolvedPath);
+export const createReadTool = ({ needsApproval = true }: CreateReadToolOptions = {}) =>
+  tool({
+    description: DESCRIPTION,
+    inputSchema: z.object({
+      filePath: z.string().describe("Absolute or relative file/directory path to read"),
+      offset: z.coerce.number().int().positive().optional().describe("Start line/entry number (1-indexed)"),
+      limit: z.coerce.number().int().positive().optional().describe("Maximum lines/entries to read"),
+    }),
+    needsApproval,
+    execute: async ({ filePath, offset, limit }, { experimental_context }) => {
+      const context = experimental_context as AgentContext;
+      const cwd = context.workdir;
+      const normalizedOffset = offset ?? 1;
+      const normalizedLimit = limit ?? DEFAULT_READ_LIMIT;
 
-    if (!stat) {
-      const suggestions = await findPathSuggestions(resolvedPath);
-      if (suggestions.length > 0) {
-        throw new Error(`Path not found: ${resolvedPath}\n\nDid you mean:\n${suggestions.join("\n")}`);
+      const resolvedPath = path.isAbsolute(filePath) ? path.normalize(filePath) : path.resolve(cwd, filePath);
+      const stat = await safeStat(resolvedPath);
+
+      if (!stat) {
+        const suggestions = await findPathSuggestions(resolvedPath);
+        if (suggestions.length > 0) {
+          throw new Error(`Path not found: ${resolvedPath}\n\nDid you mean:\n${suggestions.join("\n")}`);
+        }
+        throw new Error(`Path not found: ${resolvedPath}`);
       }
-      throw new Error(`Path not found: ${resolvedPath}`);
-    }
 
-    if (stat.isDirectory()) {
-      const output = await readDirectory({
-        directoryPath: resolvedPath,
+      if (stat.isDirectory()) {
+        const output = await readDirectory({
+          directoryPath: resolvedPath,
+          offset: normalizedOffset,
+          limit: normalizedLimit,
+        });
+
+        return {
+          title: path.relative(cwd, resolvedPath) || resolvedPath,
+          output,
+        };
+      }
+
+      const isBinary = await isBinaryFile(resolvedPath, Number(stat.size));
+      if (isBinary) {
+        throw new Error(`Cannot read binary file: ${resolvedPath}`);
+      }
+
+      const output = await readTextFile({
+        filePath: resolvedPath,
         offset: normalizedOffset,
         limit: normalizedLimit,
       });
 
       return {
-        title: path.relative(cwd, resolvedPath) || resolvedPath,
+        title: path.relative(process.cwd(), resolvedPath) || resolvedPath,
         output,
       };
-    }
-
-    const isBinary = await isBinaryFile(resolvedPath, Number(stat.size));
-    if (isBinary) {
-      throw new Error(`Cannot read binary file: ${resolvedPath}`);
-    }
-
-    const output = await readTextFile({
-      filePath: resolvedPath,
-      offset: normalizedOffset,
-      limit: normalizedLimit,
-    });
-
-    return {
-      title: path.relative(process.cwd(), resolvedPath) || resolvedPath,
-      output,
-    };
-  },
-  toModelOutput: ({ output }) => {
-    return {
-      type: "text",
-      value: output.output,
-    };
-  },
-});
+    },
+    toModelOutput: ({ output }) => {
+      return {
+        type: "text",
+        value: output.output,
+      };
+    },
+  });
 
 type ReadDirectoryParams = {
   directoryPath: string;
@@ -283,4 +288,4 @@ async function isBinaryFile(filePath: string, fileSize: number): Promise<boolean
   }
 }
 
-export type ReadToolType = InferUITool<typeof readTool>;
+export type ReadToolType = InferUITool<ReturnType<typeof createReadTool>>;
