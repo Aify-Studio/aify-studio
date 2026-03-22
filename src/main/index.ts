@@ -1,3 +1,5 @@
+import { mkdirSync } from "node:fs";
+import { homedir } from "node:os";
 import path from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
 import started from "electron-squirrel-startup";
@@ -74,10 +76,21 @@ function setupApiServer() {
     });
 }
 
+function ensureStudioDirectory() {
+  const studioDirectoryPath = path.join(homedir(), ".aify-studio");
+
+  try {
+    mkdirSync(studioDirectoryPath, { recursive: true });
+  } catch (error) {
+    console.error("Failed to create .aify-studio directory", error);
+  }
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
+  ensureStudioDirectory();
   createWindow();
   setupIpc();
   setupApiServer();

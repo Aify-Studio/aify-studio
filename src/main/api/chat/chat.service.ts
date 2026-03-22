@@ -141,6 +141,7 @@ export const createChatRoute = os
 
     const agentContext: AgentContext = {
       workdir: homedir(),
+      homedir: homedir(),
     };
 
     const stream = createUIMessageStream({
