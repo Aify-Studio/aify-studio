@@ -4,6 +4,7 @@ import path from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
 import started from "electron-squirrel-startup";
 import { IPC_CHANNELS } from "@/shared/constants";
+import { initializeSettings } from "../shared/settings";
 import { apiServer } from "./api";
 import { runMigrate } from "./api/infra/db";
 import { ipcHandler } from "./ipc/ipc.hander";
@@ -91,6 +92,7 @@ function ensureStudioDirectory() {
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
   ensureStudioDirectory();
+  initializeSettings();
   createWindow();
   setupIpc();
   setupApiServer();
