@@ -2,7 +2,7 @@ import type { UIMessage } from "ai";
 import z from "zod";
 import type { BashToolType } from "@/shared/tools/bash";
 import type { ReadToolType } from "@/shared/tools/read";
-import type { TaskToolType } from "@/shared/tools/task";
+import type { SubagentToolType } from "@/shared/tools/subagent";
 import type { WriteToolType } from "@/shared/tools/write";
 
 export const metadataSchema = z.object({
@@ -18,7 +18,7 @@ export type ChatDataPart = z.infer<typeof dataPartSchema>;
 export type ChatTools = {
   bash: BashToolType;
   read: ReadToolType;
-  task: TaskToolType;
+  subagent: SubagentToolType;
   write: WriteToolType;
 };
 

@@ -14,7 +14,7 @@ import { createChromeDevtoolsMcpClient } from "@/shared/agent/mcp";
 import { generateMessageId } from "@/shared/lib/id-utils";
 import { createBashTool } from "@/shared/tools/bash";
 import { createReadTool } from "@/shared/tools/read";
-import { createTaskTool } from "@/shared/tools/task";
+import { createSubagentTool } from "@/shared/tools/subagent";
 import { createWriteTool } from "@/shared/tools/write";
 import type { ChatMessage } from "../../../shared/lib/chat.schema";
 import { AGENT_ORCHESTRATION_PROMPT, TITLE_PROMPT } from "../infra/ai/prompts";
@@ -178,7 +178,7 @@ export const createChatRoute = os
             bash: bashTool,
             read: readTool,
             write: writeTool,
-            task: createTaskTool({
+            subagent: createSubagentTool({
               context: agentContext,
               model: chatModel,
               childTools: {

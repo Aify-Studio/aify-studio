@@ -1,4 +1,4 @@
 export * from "./bash";
 export * from "./read";
-export * from "./task";
+export * from "./subagent";
 export * from "./write";

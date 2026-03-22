@@ -12,7 +12,7 @@ const DESCRIPTION = `Spawn a subagent with fresh context. The subagent only rece
 - The subagent returns a concise summary only.
 - This tool may run multiple child tool calls automatically.`;
 
-interface CreateTaskToolProps {
+interface CreateSubagentToolProps {
   context: AgentContext;
   model: GenerateTextModel;
   childTools: ToolSet;
@@ -21,7 +21,7 @@ interface CreateTaskToolProps {
 const createSubagentSystemPrompt = (workdir: string): string =>
   `You are a subagent at ${workdir}. Complete the given task, then summarize your findings.`;
 
-export const createTaskTool = ({ context, model, childTools }: CreateTaskToolProps) =>
+export const createSubagentTool = ({ context, model, childTools }: CreateSubagentToolProps) =>
   tool({
     description: DESCRIPTION,
     inputSchema: z.object({
@@ -58,4 +58,4 @@ export const createTaskTool = ({ context, model, childTools }: CreateTaskToolPro
     },
   });
 
-export type TaskToolType = InferUITool<ReturnType<typeof createTaskTool>>;
+export type SubagentToolType = InferUITool<ReturnType<typeof createSubagentTool>>;

@@ -1,7 +1,7 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import type { UIToolInvocation } from "ai";
 import type { ChatMessage } from "@/shared/lib/chat.schema";
-import type { TaskToolType } from "@/shared/tools/task";
+import type { SubagentToolType } from "@/shared/tools/subagent";
 import {
   Confirmation,
   ConfirmationAccepted,
@@ -14,7 +14,7 @@ import {
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "../ai-elements/tool";
 
 interface TaskToolProps {
-  part: UIToolInvocation<TaskToolType>;
+  part: UIToolInvocation<SubagentToolType>;
   addToolOutput: UseChatHelpers<ChatMessage>["addToolOutput"];
   addToolApprovalResponse: UseChatHelpers<ChatMessage>["addToolApprovalResponse"];
 }
