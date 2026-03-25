@@ -15,6 +15,7 @@ import { generateMessageId } from "@/shared/lib/id-utils";
 import { createBashTool } from "@/shared/tools/bash";
 import { createReadTool } from "@/shared/tools/read";
 import { createSubagentTool } from "@/shared/tools/subagent";
+import { createTaskCreateTool, createTaskGetTool, createTaskListTool, createTaskUpdateTool } from "@/shared/tools/task";
 import { createWriteTool } from "@/shared/tools/write";
 import type { ChatMessage } from "../../../shared/lib/chat.schema";
 import { AGENT_ORCHESTRATION_PROMPT, TITLE_PROMPT } from "../infra/ai/prompts";
@@ -143,6 +144,7 @@ export const createChatRoute = os
     const agentContext: AgentContext = {
       workdir: homedir(),
       homedir: homedir(),
+      chatId,
     };
 
     const stream = createUIMessageStream({
@@ -164,6 +166,10 @@ export const createChatRoute = os
 
         const bashTool = createBashTool({ context: agentContext, needsApproval: true });
         const readTool = createReadTool({ needsApproval: true });
+        const taskCreateTool = createTaskCreateTool({ context: agentContext, needsApproval: true });
+        const taskGetTool = createTaskGetTool({ context: agentContext, needsApproval: false });
+        const taskListTool = createTaskListTool({ context: agentContext, needsApproval: false });
+        const taskUpdateTool = createTaskUpdateTool({ context: agentContext, needsApproval: false });
         const writeTool = createWriteTool({ needsApproval: true });
 
         const childBashTool = createBashTool({ context: agentContext, needsApproval: false });
@@ -188,6 +194,10 @@ export const createChatRoute = os
                 ...mcpTools,
               },
             }),
+            task_create: taskCreateTool,
+            task_get: taskGetTool,
+            task_list: taskListTool,
+            task_update: taskUpdateTool,
             ...mcpTools,
           },
           stopWhen: stepCountIs(20),

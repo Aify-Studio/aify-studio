@@ -1,6 +1,7 @@
 import { generateText, type InferUITool, stepCountIs, tool } from "ai";
 import { z } from "zod";
 import type { AgentContext } from "../agent/context";
+import { generateChatId } from "../lib/id-utils";
 
 type ToolSet = NonNullable<Parameters<typeof generateText>[0]["tools"]>;
 type GenerateTextModel = Parameters<typeof generateText>[0]["model"];
@@ -34,6 +35,8 @@ export const createSubagentTool = ({ context, model, childTools }: CreateSubagen
       const childContext: AgentContext = {
         workdir: parentContext.workdir,
         homedir: parentContext.homedir,
+        parentChatId: parentContext.chatId,
+        chatId: generateChatId(),
       };
 
       const { text } = await generateText({
