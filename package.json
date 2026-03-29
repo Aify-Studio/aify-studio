@@ -84,6 +84,8 @@
     "drizzle-orm": "^0.45.1",
     "electron-squirrel-startup": "^1.0.1",
     "embla-carousel-react": "^8.6.0",
+    "glob": "^13.0.6",
+    "gray-matter": "^4.0.3",
     "i18next": "^25.7.3",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.562.0",

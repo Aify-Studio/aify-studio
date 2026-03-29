@@ -10,10 +10,11 @@ import {
 } from "ai";
 import z from "zod";
 import type { AgentContext } from "@/shared/agent/context";
-import { createChromeDevtoolsMcpClient } from "@/shared/agent/mcp";
 import { generateMessageId } from "@/shared/lib/id-utils";
+import { skillManager } from "@/shared/skill";
 import { createBashTool } from "@/shared/tools/bash";
 import { createReadTool } from "@/shared/tools/read";
+import { createSkillTool } from "@/shared/tools/skill";
 import { createSubagentTool } from "@/shared/tools/subagent";
 import { createTaskCreateTool, createTaskGetTool, createTaskListTool, createTaskUpdateTool } from "@/shared/tools/task";
 import { createWriteTool } from "@/shared/tools/write";
@@ -150,6 +151,9 @@ export const createChatRoute = os
     const stream = createUIMessageStream({
       originalMessages: chatMessages,
       execute: async ({ writer }) => {
+        // Load skills before starting the stream to ensure they're available for tool execution
+        await skillManager.loadSkills(agentContext.workdir);
+
         // Handle title generation in parallel
         titlePromise?.then((title) => {
           updateChatTitleById(chatId, title);
@@ -158,27 +162,35 @@ export const createChatRoute = os
 
         const chatModel = await getChatModel();
 
-        const chromeDevtoolsMcpClient = await createChromeDevtoolsMcpClient();
-        const chromeDevtoolMcpTools = await chromeDevtoolsMcpClient.tools();
+        // const chromeDevtoolsMcpClient = await createChromeDevtoolsMcpClient();
+        // const chromeDevtoolMcpTools = await chromeDevtoolsMcpClient.tools();
         const mcpTools: Record<string, any> = {
-          ...chromeDevtoolMcpTools,
+          // ...chromeDevtoolMcpTools,
         };
 
-        const bashTool = createBashTool({ context: agentContext, needsApproval: true });
-        const readTool = createReadTool({ needsApproval: true });
-        const taskCreateTool = createTaskCreateTool({ context: agentContext, needsApproval: true });
+        const bashTool = createBashTool({ context: agentContext, needsApproval: false });
+        const readTool = createReadTool({ needsApproval: false });
+        const taskCreateTool = createTaskCreateTool({ context: agentContext, needsApproval: false });
         const taskGetTool = createTaskGetTool({ context: agentContext, needsApproval: false });
         const taskListTool = createTaskListTool({ context: agentContext, needsApproval: false });
         const taskUpdateTool = createTaskUpdateTool({ context: agentContext, needsApproval: false });
-        const writeTool = createWriteTool({ needsApproval: true });
+        const skillTool = createSkillTool({
+          context: agentContext,
+          needsApproval: false,
+          skills: skillManager.getAll(),
+        });
+        const writeTool = createWriteTool({ needsApproval: false });
 
         const childBashTool = createBashTool({ context: agentContext, needsApproval: false });
         const childReadTool = createReadTool({ needsApproval: false });
         const childWriteTool = createWriteTool({ needsApproval: false });
 
+        let systemPrompt = AGENT_ORCHESTRATION_PROMPT;
+        systemPrompt = skillManager.appendPrompt(systemPrompt);
+
         const result = streamText({
           model: chatModel,
-          system: AGENT_ORCHESTRATION_PROMPT,
+          system: systemPrompt,
           messages: await convertToModelMessages(chatMessages),
           tools: {
             bash: bashTool,
@@ -198,6 +210,7 @@ export const createChatRoute = os
             task_get: taskGetTool,
             task_list: taskListTool,
             task_update: taskUpdateTool,
+            skill: skillTool,
             ...mcpTools,
           },
           stopWhen: stepCountIs(20),

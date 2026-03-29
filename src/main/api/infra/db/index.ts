@@ -17,7 +17,7 @@ const client = createClient({ url: `file:${dbPath}` });
 
 export const db = drizzle(client, { schema });
 
-export const runMigrate = async () => {
+export const runServerBefore = async () => {
   await migrate(db, {
     migrationsFolder,
   });

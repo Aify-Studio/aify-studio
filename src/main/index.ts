@@ -6,7 +6,7 @@ import started from "electron-squirrel-startup";
 import { IPC_CHANNELS } from "@/shared/constants";
 import { initializeSettings } from "../shared/settings";
 import { apiServer } from "./api";
-import { runMigrate } from "./api/infra/db";
+import { runServerBefore } from "./api/infra/db";
 import { ipcHandler } from "./ipc/ipc.hander";
 
 const inDevelopment = process.env.NODE_ENV === "development";
@@ -67,7 +67,7 @@ function setupIpc() {
 }
 
 function setupApiServer() {
-  runMigrate()
+  runServerBefore()
     .then(() => {
       apiServer.listen(18_086, "127.0.0.1", () => console.log("Listening on 127.0.0.1:18086"));
     })
